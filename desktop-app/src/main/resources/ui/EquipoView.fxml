@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="app.ui.EquipoController"
+            styleClass="app-root">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="20" styleClass="app-toolbar">
+            <VBox spacing="2">
+                <Label text="Liga Profesional" styleClass="toolbar-title"/>
+                <Label text="Panel integral de gestión" styleClass="toolbar-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Refrescar" onAction="#onRefresh" styleClass="accent-button"/>
+        </HBox>
+    </top>
+
+    <center>
+        <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" styleClass="content-container">
+            <tabs>
+                <Tab text="Equipos">
+                    <content>
+                        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" styleClass="panel-scroll">
+                            <content>
+                                <VBox spacing="18" styleClass="panel">
+                                    <VBox spacing="6">
+                                        <Label text="Equipos" styleClass="section-title"/>
+                                        <Label text="Consulta y administra los clubes de la liga." styleClass="section-subtitle"/>
+                                    </VBox>
+
+                                    <TableView fx:id="tblEquipos" prefHeight="320" VBox.vgrow="ALWAYS" styleClass="elevated-table">
+                                        <columns>
+                                            <TableColumn fx:id="colEquipoId" text="Código" prefWidth="80"/>
+                                            <TableColumn fx:id="colEquipoNombre" text="Nombre" prefWidth="180"/>
+                                            <TableColumn fx:id="colEquipoEstadio" text="Estadio" prefWidth="180"/>
+                                            <TableColumn fx:id="colEquipoAforo" text="Aforo" prefWidth="100"/>
+                                            <TableColumn fx:id="colEquipoFundacion" text="Fundación" prefWidth="120"/>
+                                            <TableColumn fx:id="colEquipoDepartamento" text="Departamento" prefWidth="160"/>
+                                        </columns>
+                                    </TableView>
+
+                                    <VBox spacing="14" styleClass="form-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <Label text="Nuevo equipo" styleClass="form-title"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                        </HBox>
+                                        <Separator/>
+                                        <GridPane hgap="12" vgap="12" styleClass="form-grid">
+                                            <columnConstraints>
+                                                <ColumnConstraints halignment="RIGHT" minWidth="160"/>
+                                                <ColumnConstraints minWidth="260" hgrow="ALWAYS"/>
+                                            </columnConstraints>
+
+                                            <Label text="Nombre" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtEquipoNombre" promptText="Nombre oficial" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                                            <Label text="Estadio" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtEquipoEstadio" promptText="Estadio principal" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                            <Label text="Aforo" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtEquipoAforo" promptText="Capacidad del estadio" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                                            <Label text="Año de fundación" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtEquipoFundacion" promptText="Ej. 1905" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                                            <Label text="Departamento" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtEquipoDepartamento" promptText="Departamento / Provincia" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                                            <Button text="Crear equipo" onAction="#onCrearEquipo" styleClass="primary-button"
+                                                    GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                        </GridPane>
+                                    </VBox>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </content>
+                </Tab>
+
+                <Tab text="Jugadores">
+                    <content>
+                        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" styleClass="panel-scroll">
+                            <content>
+                                <VBox spacing="18" styleClass="panel">
+                                    <VBox spacing="6">
+                                        <Label text="Jugadores" styleClass="section-title"/>
+                                        <Label text="Registra fichajes, datos personales y correos asociados." styleClass="section-subtitle"/>
+                                    </VBox>
+
+                                    <TableView fx:id="tblJugadores" prefHeight="320" VBox.vgrow="ALWAYS" styleClass="elevated-table">
+                                        <columns>
+                                            <TableColumn fx:id="colJugadorId" text="Código" prefWidth="80"/>
+                                            <TableColumn fx:id="colJugadorNombre" text="Nombres" prefWidth="200"/>
+                                            <TableColumn fx:id="colJugadorApellidos" text="Apellidos" prefWidth="200"/>
+                                            <TableColumn fx:id="colJugadorCorreo" text="Correo" prefWidth="220"/>
+                                            <TableColumn fx:id="colJugadorMunicipio" text="Municipio" prefWidth="160"/>
+                                            <TableColumn fx:id="colJugadorFecha" text="Nacimiento" prefWidth="140"/>
+                                            <TableColumn fx:id="colJugadorPosicion" text="Posición" prefWidth="140"/>
+                                            <TableColumn fx:id="colJugadorEquipo" text="Equipo" prefWidth="160"/>
+                                        </columns>
+                                    </TableView>
+
+                                    <VBox spacing="14" styleClass="form-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <Label text="Nuevo jugador" styleClass="form-title"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                        </HBox>
+                                        <Separator/>
+                                        <GridPane hgap="12" vgap="12" styleClass="form-grid">
+                                            <columnConstraints>
+                                                <ColumnConstraints halignment="RIGHT" minWidth="160"/>
+                                                <ColumnConstraints minWidth="260" hgrow="ALWAYS"/>
+                                            </columnConstraints>
+
+                                            <Label text="Primer nombre" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtJugadorNombre1" promptText="Nombre 1" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                                            <Label text="Segundo nombre" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtJugadorNombre2" promptText="Nombre 2 (opcional)" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                            <Label text="Primer apellido" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtJugadorApellido1" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                                            <Label text="Segundo apellido" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtJugadorApellido2" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                                            <Label text="Correo principal" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtJugadorCorreo" promptText="correo@dominio.com" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                                            <Label text="Municipio" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtJugadorMunicipio" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                                            <Label text="Fecha nacimiento" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                                            <DatePicker fx:id="dateJugadorNacimiento" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+                                            <Label text="Posición" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbJugadorPosicion" promptText="Selecciona posición" GridPane.rowIndex="7" GridPane.columnIndex="1">
+                                                <items>
+                                                    <FXCollections fx:factory="observableArrayList">
+                                                        <String fx:value="Portero"/>
+                                                        <String fx:value="Defensa"/>
+                                                        <String fx:value="Centrocampista"/>
+                                                        <String fx:value="Delantero"/>
+                                                    </FXCollections>
+                                                </items>
+                                            </ComboBox>
+
+                                            <Label text="Equipo" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbJugadorEquipo" promptText="Selecciona equipo" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+
+                                            <Button text="Crear jugador" onAction="#onCrearJugador" styleClass="primary-button"
+                                                    GridPane.rowIndex="9" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                        </GridPane>
+                                    </VBox>
+
+                                    <VBox spacing="12" styleClass="form-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <Label text="Correos adicionales de jugador" styleClass="form-title"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                        </HBox>
+                                        <Separator/>
+                                        <GridPane hgap="12" vgap="12" styleClass="form-grid">
+                                            <columnConstraints>
+                                                <ColumnConstraints halignment="RIGHT" minWidth="160"/>
+                                                <ColumnConstraints minWidth="260" hgrow="ALWAYS"/>
+                                            </columnConstraints>
+
+                                            <Label text="Jugador" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbJugadorSeleccionCorreo" promptText="Selecciona jugador"
+                                                      GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                                            <Label text="Correo nuevo" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtCorreoJugadorNuevo" promptText="correo alterno"
+                                                       GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                            <Button text="Agregar correo" onAction="#onAgregarCorreoJugador" styleClass="primary-button"
+                                                    GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                        </GridPane>
+
+                                        <TableView fx:id="tblCorreosJugador" prefHeight="180" styleClass="elevated-table">
+                                            <columns>
+                                                <TableColumn fx:id="colCorreoJugadorId" text="ID" prefWidth="80"/>
+                                                <TableColumn fx:id="colCorreoJugadorCorreo" text="Correo electrónico" prefWidth="280"/>
+                                            </columns>
+                                        </TableView>
+                                    </VBox>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </content>
+                </Tab>
+
+                <Tab text="Partidos">
+                    <content>
+                        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" styleClass="panel-scroll">
+                            <content>
+                                <VBox spacing="18" styleClass="panel">
+                                    <VBox spacing="6">
+                                        <Label text="Partidos" styleClass="section-title"/>
+                                        <Label text="Administra la programación y resultados de los encuentros." styleClass="section-subtitle"/>
+                                    </VBox>
+
+                                    <TableView fx:id="tblPartidos" prefHeight="320" VBox.vgrow="ALWAYS" styleClass="elevated-table">
+                                        <columns>
+                                            <TableColumn fx:id="colPartidoId" text="Código" prefWidth="90"/>
+                                            <TableColumn fx:id="colPartidoFecha" text="Fecha" prefWidth="140"/>
+                                            <TableColumn fx:id="colPartidoGolesCasa" text="Goles casa" prefWidth="100"/>
+                                            <TableColumn fx:id="colPartidoGolesFuera" text="Goles fuera" prefWidth="100"/>
+                                            <TableColumn fx:id="colPartidoEquipoCasa" text="Equipo casa" prefWidth="180"/>
+                                            <TableColumn fx:id="colPartidoEquipoFuera" text="Equipo fuera" prefWidth="180"/>
+                                        </columns>
+                                    </TableView>
+
+                                    <VBox spacing="14" styleClass="form-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <Label text="Nuevo partido" styleClass="form-title"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                        </HBox>
+                                      <Separator/>
+                                        <GridPane hgap="12" vgap="12" styleClass="form-grid">
+                                            <columnConstraints>
+                                                <ColumnConstraints halignment="RIGHT" minWidth="160"/>
+                                                <ColumnConstraints minWidth="260" hgrow="ALWAYS"/>
+                                            </columnConstraints>
+
+                                            <Label text="Fecha" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                            <DatePicker fx:id="datePartidoFecha" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                                            <Label text="Equipo casa" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbPartidoEquipoCasa" promptText="Selecciona equipo casa" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                            <Label text="Equipo fuera" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbPartidoEquipoFuera" promptText="Selecciona equipo visitante" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                                            <Label text="Goles casa" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPartidoGolesCasa" promptText="0" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                                            <Label text="Goles fuera" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPartidoGolesFuera" promptText="0" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                                            <Button text="Crear partido" onAction="#onCrearPartido" styleClass="primary-button"
+                                                    GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                        </GridPane>
+                                    </VBox>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </content>
+                </Tab>
+
+                <Tab text="Goles">
+                    <content>
+                        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" styleClass="panel-scroll">
+                            <content>
+                                <VBox spacing="18" styleClass="panel">
+                                    <VBox spacing="6">
+                                        <Label text="Goles" styleClass="section-title"/>
+                                        <Label text="Registra anotaciones por partido y jugador." styleClass="section-subtitle"/>
+                                    </VBox>
+
+                                    <TableView fx:id="tblGoles" prefHeight="320" VBox.vgrow="ALWAYS" styleClass="elevated-table">
+                                        <columns>
+                                            <TableColumn fx:id="colGolId" text="ID" prefWidth="80"/>
+                                            <TableColumn fx:id="colGolPartido" text="Partido" prefWidth="220"/>
+                                            <TableColumn fx:id="colGolJugador" text="Jugador" prefWidth="220"/>
+                                            <TableColumn fx:id="colGolMinuto" text="Minuto" prefWidth="100"/>
+                                            <TableColumn fx:id="colGolDescripcion" text="Descripción" prefWidth="220"/>
+                                        </columns>
+                                    </TableView>
+
+                                    <VBox spacing="14" styleClass="form-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <Label text="Nuevo gol" styleClass="form-title"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                        </HBox>
+                                        <Separator/>
+                                        <GridPane hgap="12" vgap="12" styleClass="form-grid">
+                                            <columnConstraints>
+                                                <ColumnConstraints halignment="RIGHT" minWidth="160"/>
+                                                <ColumnConstraints minWidth="260" hgrow="ALWAYS"/>
+                                            </columnConstraints>
+
+                                            <Label text="Partido" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbGolPartido" promptText="Selecciona partido" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                                            <Label text="Jugador" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbGolJugador" promptText="Selecciona jugador" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                            <Label text="Minuto" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtGolMinuto" promptText="Ej. 45" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                                            <Label text="Descripción" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtGolDescripcion" promptText="Detalle de la jugada" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                                            <Button text="Registrar gol" onAction="#onCrearGol" styleClass="primary-button"
+                                                    GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                        </GridPane>
+                                    </VBox>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </content>
+                </Tab>
+
+                <Tab text="Presidentes">
+                    <content>
+                        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" styleClass="panel-scroll">
+                            <content>
+                                <VBox spacing="18" styleClass="panel">
+                                    <VBox spacing="6">
+                                        <Label text="Presidentes" styleClass="section-title"/>
+                                        <Label text="Gestiona presidentes, sus datos personales y correos." styleClass="section-subtitle"/>
+                                    </VBox>
+
+                                    <TableView fx:id="tblPresidentes" prefHeight="320" VBox.vgrow="ALWAYS" styleClass="elevated-table">
+                                        <columns>
+                                            <TableColumn fx:id="colPresidenteDpi" text="DPI" prefWidth="140"/>
+                                            <TableColumn fx:id="colPresidenteNombres" text="Nombres" prefWidth="220"/>
+                                            <TableColumn fx:id="colPresidenteApellidos" text="Apellidos" prefWidth="220"/>
+                                            <TableColumn fx:id="colPresidenteCorreo" text="Correo" prefWidth="220"/>
+                                            <TableColumn fx:id="colPresidenteMunicipio" text="Municipio" prefWidth="160"/>
+                                            <TableColumn fx:id="colPresidenteFecha" text="Nacimiento" prefWidth="140"/>
+                                            <TableColumn fx:id="colPresidenteAnio" text="Año elegido" prefWidth="120"/>
+                                            <TableColumn fx:id="colPresidenteEquipo" text="Equipo" prefWidth="180"/>
+                                        </columns>
+                                    </TableView>
+
+                                    <VBox spacing="14" styleClass="form-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <Label text="Nuevo presidente" styleClass="form-title"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                        </HBox>
+                                        <Separator/>
+                                        <GridPane hgap="12" vgap="12" styleClass="form-grid">
+                                            <columnConstraints>
+                                                <ColumnConstraints halignment="RIGHT" minWidth="160"/>
+                                                <ColumnConstraints minWidth="260" hgrow="ALWAYS"/>
+                                            </columnConstraints>
+
+                                            <Label text="DPI" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPresidenteDpi" promptText="Documento de identificación" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                                            <Label text="Primer nombre" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPresidenteNombre1" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                            <Label text="Segundo nombre" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPresidenteNombre2" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                                            <Label text="Tercer nombre" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPresidenteNombre3" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                                            <Label text="Primer apellido" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPresidenteApellido1" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                                            <Label text="Segundo apellido" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPresidenteApellido2" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                                            <Label text="Correo principal" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPresidenteCorreo" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+                                            <Label text="Municipio" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPresidenteMunicipio" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+
+                                            <Label text="Fecha nacimiento" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                                            <DatePicker fx:id="datePresidenteNacimiento" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+
+                                            <Label text="Año elegido" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPresidenteAnio" promptText="Ej. 2020" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+
+                                            <Label text="Equipo" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbPresidenteEquipo" promptText="Selecciona equipo" GridPane.rowIndex="10" GridPane.columnIndex="1"/>
+
+                                            <Button text="Crear presidente" onAction="#onCrearPresidente" styleClass="primary-button"
+                                                    GridPane.rowIndex="11" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                        </GridPane>
+                                    </VBox>
+
+                                    <VBox spacing="12" styleClass="form-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <Label text="Correos adicionales de presidente" styleClass="form-title"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                        </HBox>
+                                        <Separator/>
+                                        <GridPane hgap="12" vgap="12" styleClass="form-grid">
+                                            <columnConstraints>
+                                                <ColumnConstraints halignment="RIGHT" minWidth="160"/>
+                                                <ColumnConstraints minWidth="260" hgrow="ALWAYS"/>
+                                            </columnConstraints>
+
+                                            <Label text="Presidente" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbPresidenteSeleccionCorreo" promptText="Selecciona presidente"
+                                                      GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                                            <Label text="Correo nuevo" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtCorreoPresidenteNuevo" promptText="correo alterno"
+                                                       GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                            <Button text="Agregar correo" onAction="#onAgregarCorreoPresidente" styleClass="primary-button"
+                                                    GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                        </GridPane>
+
+                                        <TableView fx:id="tblCorreosPresidente" prefHeight="180" styleClass="elevated-table">
+                                            <columns>
+                                                <TableColumn fx:id="colCorreoPresidenteId" text="ID" prefWidth="80"/>
+                                                <TableColumn fx:id="colCorreoPresidenteCorreo" text="Correo electrónico" prefWidth="280"/>
+                                            </columns>
+                                        </TableView>
+                                    </VBox>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="12" styleClass="app-footer">
+            <Label text="Consejo: refresca tras crear registros para sincronizar las listas."/>
+            <Label text="© 2025 LigaProApp"/>
+        </HBox>
+    </bottom>
+</BorderPane>

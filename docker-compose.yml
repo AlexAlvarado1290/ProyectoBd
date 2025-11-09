@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: ligapro-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ligapro
+      POSTGRES_USER: ligapro
+      POSTGRES_PASSWORD: ligapro
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./bd/postgres_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  teams-service:
+    build:
+      context: ./services/teams-service
+    container_name: ligapro-teams
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ligapro
+      SPRING_DATASOURCE_USERNAME: ligapro
+      SPRING_DATASOURCE_PASSWORD: ligapro
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+    depends_on:
+      - db
+    ports:
+      - "8181:8081"
+
+  players-service:
+    build:
+      context: ./services/players-service
+    container_name: ligapro-players
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ligapro
+      SPRING_DATASOURCE_USERNAME: ligapro
+      SPRING_DATASOURCE_PASSWORD: ligapro
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+    depends_on:
+      - db
+    ports:
+      - "8182:8082"
+
+  matches-service:
+    build:
+      context: ./services/matches-service
+    container_name: ligapro-matches
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ligapro
+      SPRING_DATASOURCE_USERNAME: ligapro
+      SPRING_DATASOURCE_PASSWORD: ligapro
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+    depends_on:
+      - db
+    ports:
+      - "8183:8083"
+
+volumes:
+  db-data:
+
