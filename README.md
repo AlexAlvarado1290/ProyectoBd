@@ -32,7 +32,7 @@ Los servicios corren en los puertos publicados via Docker:
 
 2. **Levantar la app de escritorio**:
    ```bash
-   cd desktop-app
+   cd carpeta padre
    gradle run
    ```
 
