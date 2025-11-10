@@ -4,16 +4,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "CORREOPRESIDENTE")
 public class PresidentEmail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_correo_presidente")
     private Long id;
 
+    @Column(name = "correo_electronico")
     private String email;
 
     @ManyToOne
-    @JoinColumn(name = "president_dpi")
+    @JoinColumn(name = "dpi")
     @JsonIgnoreProperties({"emails", "team"})
     private President president;
 

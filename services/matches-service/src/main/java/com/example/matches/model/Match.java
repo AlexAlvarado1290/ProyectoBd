@@ -9,17 +9,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "matches")
+@Table(name = "PARTIDO")
 public class Match {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "codigo_partido")
     private Long id;
 
+    @Column(name = "fecha")
     private LocalDate date;
+    @Column(name = "goles_casa")
     private Integer homeGoals;
+    @Column(name = "goles_fuera")
     private Integer awayGoals;
+    @Column(name = "codigo_equipo_casa")
     private Long homeTeamId;
+    @Column(name = "codigo_equipo_fuera")
     private Long awayTeamId;
 
     @JsonIgnore

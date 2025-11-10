@@ -9,25 +9,38 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "PRESIDENTE")
 public class President {
 
     @Id
     private String dpi;
 
+    @Column(name = "nombre1")
     private String firstName;
+    @Column(name = "nombre2")
     private String secondName;
+    @Column(name = "nombre3")
     private String thirdName;
+    @Column(name = "apellido1")
     private String lastName1;
+    @Column(name = "apellido2")
     private String lastName2;
+    @Column(name = "fecha_nacimiento")
     private LocalDate birthDate;
+    @Column(name = "correo_electronico")
     private String email;
-    private String municipality;
+    @Column(name = "anio_elegido")
     private Integer electionYear;
 
     @OneToOne
-    @JoinColumn(name = "team_id", unique = true)
+    @JoinColumn(name = "codigo_equipo", unique = true)
     @JsonIgnoreProperties("president")
     private Team team;
+
+    @ManyToOne
+    @JoinColumn(name = "codigo_municipio")
+    @JsonIgnoreProperties({"department", "presidents"})
+    private Municipality municipality;
 
     @JsonIgnore
     @OneToMany(mappedBy = "president", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -58,14 +71,19 @@ public class President {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getMunicipality() { return municipality; }
-    public void setMunicipality(String municipality) { this.municipality = municipality; }
-
     public Integer getElectionYear() { return electionYear; }
     public void setElectionYear(Integer electionYear) { this.electionYear = electionYear; }
 
     public Team getTeam() { return team; }
     public void setTeam(Team team) { this.team = team; }
+
+    public Municipality getMunicipality() {
+        return municipality;
+    }
+
+    public void setMunicipality(Municipality municipality) {
+        this.municipality = municipality;
+    }
 
     public List<PresidentEmail> getEmails() { return emails; }
     public void setEmails(List<PresidentEmail> emails) { this.emails = emails; }

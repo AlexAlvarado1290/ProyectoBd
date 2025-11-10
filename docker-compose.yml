@@ -1,31 +1,31 @@
-version: "3.9"
-
 services:
-  db:
-    image: postgres:16
-    container_name: ligapro-db
+  oracle-db:
+    image: gvenzl/oracle-xe:21-slim
+    container_name: ligapro-oracle
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ligapro
-      POSTGRES_USER: ligapro
-      POSTGRES_PASSWORD: ligapro
+      ORACLE_PASSWORD: ligapro
+      APP_USER: LIGAPRO
+      APP_USER_PASSWORD: ligapro
+      ORACLE_CHARACTERSET: AL32UTF8
     ports:
-      - "5432:5432"
+      - "1521:1521"
     volumes:
-      - db-data:/var/lib/postgresql/data
-      - ./bd/postgres_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - oracle-data:/opt/oracle/oradata
+      - ./bd/oracle_init.sql:/container-entrypoint-initdb.d/init.sql:ro
 
   teams-service:
     build:
       context: ./services/teams-service
     container_name: ligapro-teams
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ligapro
-      SPRING_DATASOURCE_USERNAME: ligapro
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle-db:1521/XEPDB1
+      SPRING_DATASOURCE_USERNAME: LIGAPRO
       SPRING_DATASOURCE_PASSWORD: ligapro
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: oracle.jdbc.OracleDriver
     depends_on:
-      - db
+      - oracle-db
     ports:
       - "8181:8081"
 
@@ -34,12 +34,13 @@ services:
       context: ./services/players-service
     container_name: ligapro-players
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ligapro
-      SPRING_DATASOURCE_USERNAME: ligapro
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle-db:1521/XEPDB1
+      SPRING_DATASOURCE_USERNAME: LIGAPRO
       SPRING_DATASOURCE_PASSWORD: ligapro
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: oracle.jdbc.OracleDriver
     depends_on:
-      - db
+      - oracle-db
     ports:
       - "8182:8082"
 
@@ -48,15 +49,16 @@ services:
       context: ./services/matches-service
     container_name: ligapro-matches
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ligapro
-      SPRING_DATASOURCE_USERNAME: ligapro
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle-db:1521/XEPDB1
+      SPRING_DATASOURCE_USERNAME: LIGAPRO
       SPRING_DATASOURCE_PASSWORD: ligapro
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: oracle.jdbc.OracleDriver
     depends_on:
-      - db
+      - oracle-db
     ports:
       - "8183:8083"
 
 volumes:
-  db-data:
+  oracle-data:
 

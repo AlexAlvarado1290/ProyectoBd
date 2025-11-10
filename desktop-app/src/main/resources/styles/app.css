@@ -204,6 +204,51 @@
     -fx-effect: none;
 }
 
+.secondary-button {
+    -fx-background-color: rgba(70, 88, 255, 0.08);
+    -fx-border-color: rgba(70, 88, 255, 0.25);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #24335b;
+    -fx-font-weight: 600;
+    -fx-padding: 10 24;
+}
+
+.secondary-button:hover {
+    -fx-background-color: rgba(70, 88, 255, 0.14);
+}
+
+.secondary-button:pressed {
+    -fx-background-color: rgba(70, 88, 255, 0.22);
+}
+
+.secondary-button:disabled {
+    -fx-opacity: 0.6;
+}
+
+.danger-button {
+    -fx-background-color: linear-gradient(to right, #f87171, #ef4444);
+    -fx-background-radius: 999;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-padding: 10 24;
+    -fx-effect: dropshadow(gaussian, rgba(248, 113, 113, 0.35), 16, 0.3, 0, 8);
+}
+
+.danger-button:hover {
+    -fx-background-color: linear-gradient(to right, #fb7185, #f43f5e);
+}
+
+.danger-button:pressed {
+    -fx-background-color: #dc2626;
+}
+
+.danger-button:disabled {
+    -fx-opacity: 0.6;
+    -fx-effect: none;
+}
+
 .form-card .separator {
     -fx-opacity: 0.35;
 }

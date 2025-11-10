@@ -29,7 +29,7 @@ public class EquipoController {
     @FXML private TextField txtEquipoEstadio;
     @FXML private TextField txtEquipoAforo;
     @FXML private TextField txtEquipoFundacion;
-    @FXML private TextField txtEquipoDepartamento;
+    @FXML private ComboBox<Map<String, Object>> cmbEquipoDepartamento;
 
     @FXML private TableView<Map<String, Object>> tblJugadores;
     @FXML private TableColumn<Map<String, Object>, String> colJugadorId;
@@ -46,9 +46,10 @@ public class EquipoController {
     @FXML private TextField txtJugadorApellido1;
     @FXML private TextField txtJugadorApellido2;
     @FXML private TextField txtJugadorCorreo;
-    @FXML private TextField txtJugadorMunicipio;
     @FXML private DatePicker dateJugadorNacimiento;
     @FXML private ComboBox<String> cmbJugadorPosicion;
+    @FXML private ComboBox<Map<String, Object>> cmbJugadorDepartamento;
+    @FXML private ComboBox<Map<String, Object>> cmbJugadorMunicipio;
     @FXML private ComboBox<Map<String, Object>> cmbJugadorEquipo;
 
     @FXML private ComboBox<Map<String, Object>> cmbJugadorSeleccionCorreo;
@@ -100,9 +101,10 @@ public class EquipoController {
     @FXML private TextField txtPresidenteApellido1;
     @FXML private TextField txtPresidenteApellido2;
     @FXML private TextField txtPresidenteCorreo;
-    @FXML private TextField txtPresidenteMunicipio;
     @FXML private DatePicker datePresidenteNacimiento;
     @FXML private TextField txtPresidenteAnio;
+    @FXML private ComboBox<Map<String, Object>> cmbPresidenteDepartamento;
+    @FXML private ComboBox<Map<String, Object>> cmbPresidenteMunicipio;
     @FXML private ComboBox<Map<String, Object>> cmbPresidenteEquipo;
 
     @FXML private ComboBox<Map<String, Object>> cmbPresidenteSeleccionCorreo;
@@ -123,15 +125,30 @@ public class EquipoController {
     private final ObservableList<Map<String, Object>> correosJugador = FXCollections.observableArrayList();
     private final ObservableList<Map<String, Object>> correosPresidente = FXCollections.observableArrayList();
 
+    private final ObservableList<Map<String, Object>> departamentos = FXCollections.observableArrayList();
+    private final ObservableList<Map<String, Object>> municipiosJugador = FXCollections.observableArrayList();
+    private final ObservableList<Map<String, Object>> municipiosPresidente = FXCollections.observableArrayList();
+
     private final ObservableList<Map<String, Object>> equipoComboItems = FXCollections.observableArrayList();
     private final ObservableList<Map<String, Object>> jugadorComboItems = FXCollections.observableArrayList();
     private final ObservableList<Map<String, Object>> partidoComboItems = FXCollections.observableArrayList();
     private final ObservableList<Map<String, Object>> presidenteComboItems = FXCollections.observableArrayList();
 
+    private final Map<Long, List<Map<String, Object>>> municipiosPorDepartamento = new HashMap<>();
+
     private final Map<Long, Map<String, Object>> teamById = new HashMap<>();
     private final Map<Long, Map<String, Object>> playerById = new HashMap<>();
     private final Map<Long, Map<String, Object>> matchById = new HashMap<>();
     private final Map<String, Map<String, Object>> presidentByDpi = new HashMap<>();
+
+    private Long selectedTeamId;
+    private Long selectedPlayerId;
+    private Long selectedPlayerEmailId;
+    private Long selectedMatchId;
+    private Long selectedGoalId;
+    private Long selectedGoalMatchId;
+    private String selectedPresidentDpi;
+    private Long selectedPresidentEmailId;
 
     @FXML
     public void initialize() {
@@ -143,6 +160,33 @@ public class EquipoController {
         cmbPresidenteSeleccionCorreo.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldValue, newValue) -> loadPresidentEmailsFromSelection());
 
+        cmbJugadorDepartamento.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldDept, newDept) -> {
+                    Long deptId = newDept != null ? asLong(newDept.get("id")) : null;
+                    updateMunicipalitiesForDepartment(deptId, municipiosJugador, cmbJugadorMunicipio, null);
+                });
+
+        cmbPresidenteDepartamento.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldDept, newDept) -> {
+                    Long deptId = newDept != null ? asLong(newDept.get("id")) : null;
+                    updateMunicipalitiesForDepartment(deptId, municipiosPresidente, cmbPresidenteMunicipio, null);
+                });
+
+        tblEquipos.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populateEquipoForm(newValue));
+        tblJugadores.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populateJugadorForm(newValue));
+        tblCorreosJugador.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populateJugadorCorreoForm(newValue));
+        tblPartidos.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populatePartidoForm(newValue));
+        tblGoles.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populateGolForm(newValue));
+        tblPresidentes.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populatePresidenteForm(newValue));
+        tblCorreosPresidente.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populatePresidenteCorreoForm(newValue));
+
         onRefresh();
     }
 
@@ -152,14 +196,14 @@ public class EquipoController {
         bindColumn(colEquipoEstadio, "stadium");
         bindColumn(colEquipoAforo, "capacity");
         bindColumn(colEquipoFundacion, "foundationYear");
-        bindColumn(colEquipoDepartamento, "department");
+        bindColumn(colEquipoDepartamento, "departmentName");
         tblEquipos.setItems(equipos);
 
         bindColumn(colJugadorId, "id");
         bindColumn(colJugadorNombre, "fullName");
         bindColumn(colJugadorApellidos, "lastNames");
         bindColumn(colJugadorCorreo, "email");
-        bindColumn(colJugadorMunicipio, "municipality");
+        bindColumn(colJugadorMunicipio, "municipalityName");
         bindColumn(colJugadorFecha, "birthDate");
         bindColumn(colJugadorPosicion, "position");
         bindColumn(colJugadorEquipo, "teamName");
@@ -188,7 +232,7 @@ public class EquipoController {
         bindColumn(colPresidenteNombres, "names");
         bindColumn(colPresidenteApellidos, "lastNames");
         bindColumn(colPresidenteCorreo, "email");
-        bindColumn(colPresidenteMunicipio, "municipality");
+        bindColumn(colPresidenteMunicipio, "municipalityName");
         bindColumn(colPresidenteFecha, "birthDate");
         bindColumn(colPresidenteAnio, "electionYear");
         bindColumn(colPresidenteEquipo, "teamName");
@@ -205,6 +249,11 @@ public class EquipoController {
     }
 
     private void setupComboBoxes() {
+        configureComboBox(cmbEquipoDepartamento, "name");
+        configureComboBox(cmbJugadorDepartamento, "name");
+        configureComboBox(cmbJugadorMunicipio, "name");
+        configureComboBox(cmbPresidenteDepartamento, "name");
+        configureComboBox(cmbPresidenteMunicipio, "name");
         configureComboBox(cmbJugadorEquipo, "name");
         configureComboBox(cmbPartidoEquipoCasa, "name");
         configureComboBox(cmbPartidoEquipoFuera, "name");
@@ -214,6 +263,13 @@ public class EquipoController {
         configureComboBox(cmbGolJugador, "fullName");
         configureComboBox(cmbJugadorSeleccionCorreo, "fullName");
         configureComboBox(cmbPresidenteSeleccionCorreo, "names");
+
+        cmbEquipoDepartamento.setItems(departamentos);
+        cmbJugadorDepartamento.setItems(departamentos);
+        cmbPresidenteDepartamento.setItems(departamentos);
+
+        cmbJugadorMunicipio.setItems(municipiosJugador);
+        cmbPresidenteMunicipio.setItems(municipiosPresidente);
 
         cmbJugadorEquipo.setItems(equipoComboItems);
         cmbPartidoEquipoCasa.setItems(equipoComboItems);
@@ -260,6 +316,7 @@ public class EquipoController {
     @FXML
     public void onRefresh() {
         try {
+            loadCatalogs();
             loadTeams();
             loadPlayers();
             loadMatches();
@@ -270,6 +327,43 @@ public class EquipoController {
         } catch (Exception e) {
             showError(e.getMessage());
         }
+    }
+
+    private void loadCatalogs() throws Exception {
+        String json = api.getDepartments();
+        List<Map<String, Object>> departmentList = mapper.readValue(json, new TypeReference<>() {});
+
+        departamentos.setAll(departmentList.stream()
+                .map(this::copyMap)
+                .peek(dept -> dept.remove("municipalities"))
+                .toList());
+
+        municipiosPorDepartamento.clear();
+        for (Map<String, Object> department : departmentList) {
+            Map<String, Object> deptCopy = copyMap(department);
+            Long deptId = asLong(deptCopy.get("id"));
+            List<Map<String, Object>> municipalities = new ArrayList<>();
+            Object muniObj = department.get("municipalities");
+            if (muniObj instanceof List<?> muniList) {
+                for (Object item : muniList) {
+                    if (item instanceof Map<?, ?> map) {
+                        Map<String, Object> muniCopy = copyMap(map);
+                        muniCopy.put("departmentId", deptId);
+                        muniCopy.remove("department");
+                        municipalities.add(muniCopy);
+                    }
+                }
+            }
+            municipiosPorDepartamento.put(deptId, municipalities);
+        }
+
+        municipiosJugador.clear();
+        municipiosPresidente.clear();
+        cmbEquipoDepartamento.getSelectionModel().clearSelection();
+        cmbJugadorDepartamento.getSelectionModel().clearSelection();
+        cmbJugadorMunicipio.getSelectionModel().clearSelection();
+        cmbPresidenteDepartamento.getSelectionModel().clearSelection();
+        cmbPresidenteMunicipio.getSelectionModel().clearSelection();
     }
 
     private void loadTeams() throws Exception {
@@ -286,13 +380,23 @@ public class EquipoController {
             team.put("stadium", stringValue(team.get("stadium")));
             team.put("capacity", numberToString(team.get("capacity")));
             team.put("foundationYear", numberToString(team.get("foundationYear")));
-            team.put("department", stringValue(team.get("department")));
+
+            Map<String, Object> department = castMap(team.get("department"));
+            if (department != null) {
+                team.put("departmentName", stringValue(department.get("name")));
+                team.put("departmentId", asLong(department.get("id")));
+            } else {
+                team.put("departmentName", "");
+                team.put("departmentId", null);
+            }
         }
 
         cmbJugadorEquipo.getSelectionModel().clearSelection();
         cmbPartidoEquipoCasa.getSelectionModel().clearSelection();
         cmbPartidoEquipoFuera.getSelectionModel().clearSelection();
         cmbPresidenteEquipo.getSelectionModel().clearSelection();
+        tblEquipos.getSelectionModel().clearSelection();
+        clearEquipoForm();
     }
 
     private void loadPlayers() throws Exception {
@@ -317,9 +421,26 @@ public class EquipoController {
             player.put("fullName", nombres);
             player.put("lastNames", apellidos);
             player.put("email", stringValue(player.get("email")));
-            player.put("municipality", stringValue(player.get("municipality")));
             player.put("birthDate", formatDate(player.get("birthDate")));
             player.put("position", stringValue(player.get("position")));
+
+            Map<String, Object> municipality = castMap(player.get("municipality"));
+            if (municipality != null) {
+                player.put("municipalityName", stringValue(municipality.get("name")));
+                player.put("municipalityId", asLong(municipality.get("id")));
+                Object departmentObj = municipality.get("department");
+                Long deptId = null;
+                if (departmentObj instanceof Map<?, ?> deptMap) {
+                    deptId = asLong(((Map<?, ?>) departmentObj).get("id"));
+                } else {
+                    deptId = asLong(municipality.get("departmentId"));
+                }
+                player.put("departmentId", deptId);
+            } else {
+                player.put("municipalityName", "");
+                player.put("municipalityId", null);
+                player.put("departmentId", null);
+            }
 
             Long teamId = asLong(player.get("teamId"));
             String teamName = Optional.ofNullable(teamById.get(teamId))
@@ -328,8 +449,8 @@ public class EquipoController {
             player.put("teamName", teamName);
         }
 
-        cmbJugadorPosicion.getSelectionModel().clearSelection();
-        cmbJugadorEquipo.getSelectionModel().clearSelection();
+        tblJugadores.getSelectionModel().clearSelection();
+        clearJugadorForm();
     }
 
     private void loadMatches() throws Exception {
@@ -356,9 +477,8 @@ public class EquipoController {
             match.put("label", String.format("#%s - %s vs %s", match.get("id"), homeName, awayName));
         }
 
-        cmbPartidoEquipoCasa.getSelectionModel().clearSelection();
-        cmbPartidoEquipoFuera.getSelectionModel().clearSelection();
-        datePartidoFecha.setValue(null);
+        tblPartidos.getSelectionModel().clearSelection();
+        clearPartidoForm();
     }
 
     private void loadGoals() throws Exception {
@@ -384,10 +504,8 @@ public class EquipoController {
             goal.put("matchLabel", label);
         }
 
-        cmbGolPartido.getSelectionModel().clearSelection();
-        cmbGolJugador.getSelectionModel().clearSelection();
-        txtGolMinuto.clear();
-        txtGolDescripcion.clear();
+        tblGoles.getSelectionModel().clearSelection();
+        clearGolForm();
     }
 
     private void loadPresidents() throws Exception {
@@ -413,9 +531,21 @@ public class EquipoController {
             president.put("names", names);
             president.put("lastNames", lastNames);
             president.put("email", stringValue(president.get("email")));
-            president.put("municipality", stringValue(president.get("municipality")));
             president.put("birthDate", formatDate(president.get("birthDate")));
             president.put("electionYear", numberToString(president.get("electionYear")));
+
+            Map<String, Object> municipality = castMap(president.get("municipality"));
+            if (municipality != null) {
+                president.put("municipalityName", stringValue(municipality.get("name")));
+                president.put("municipalityId", asLong(municipality.get("id")));
+                Map<String, Object> deptMap = castMap(municipality.get("department"));
+                Long deptId = deptMap != null ? asLong(deptMap.get("id")) : asLong(municipality.get("departmentId"));
+                president.put("departmentId", deptId);
+            } else {
+                president.put("municipalityName", "");
+                president.put("municipalityId", null);
+                president.put("departmentId", null);
+            }
 
             Map<String, Object> team = castMap(president.get("team"));
             String teamName = team != null ? stringValue(team.get("name")) : "";
@@ -424,22 +554,15 @@ public class EquipoController {
 
         cmbPresidenteEquipo.getSelectionModel().clearSelection();
         cmbPresidenteSeleccionCorreo.getSelectionModel().clearSelection();
-        txtPresidenteDpi.clear();
-        txtPresidenteNombre1.clear();
-        txtPresidenteNombre2.clear();
-        txtPresidenteNombre3.clear();
-        txtPresidenteApellido1.clear();
-        txtPresidenteApellido2.clear();
-        txtPresidenteCorreo.clear();
-        txtPresidenteMunicipio.clear();
-        datePresidenteNacimiento.setValue(null);
-        txtPresidenteAnio.clear();
+        tblPresidentes.getSelectionModel().clearSelection();
+        clearPresidenteForm();
     }
 
     private void loadPlayerEmailsFromSelection() {
         Map<String, Object> player = cmbJugadorSeleccionCorreo.getSelectionModel().getSelectedItem();
         if (player == null) {
             correosJugador.clear();
+            clearCorreoJugadorForm();
             return;
         }
         try {
@@ -447,6 +570,8 @@ public class EquipoController {
             String json = api.getPlayerEmails(playerId);
             List<Map<String, Object>> list = mapper.readValue(json, new TypeReference<>() {});
             correosJugador.setAll(list);
+            tblCorreosJugador.getSelectionModel().clearSelection();
+            clearCorreoJugadorForm();
         } catch (Exception e) {
             showError(e.getMessage());
         }
@@ -456,6 +581,7 @@ public class EquipoController {
         Map<String, Object> president = cmbPresidenteSeleccionCorreo.getSelectionModel().getSelectedItem();
         if (president == null) {
             correosPresidente.clear();
+            clearCorreoPresidenteForm();
             return;
         }
         try {
@@ -463,15 +589,246 @@ public class EquipoController {
             String json = api.getPresidentEmails(dpi);
             List<Map<String, Object>> list = mapper.readValue(json, new TypeReference<>() {});
             correosPresidente.setAll(list);
+            tblCorreosPresidente.getSelectionModel().clearSelection();
+            clearCorreoPresidenteForm();
         } catch (Exception e) {
             showError(e.getMessage());
         }
     }
 
+    private void populateEquipoForm(Map<String, Object> team) {
+        if (team == null) {
+            clearEquipoForm();
+            return;
+        }
+        selectedTeamId = asLong(team.get("id"));
+        txtEquipoNombre.setText(stringValue(team.get("name")));
+        txtEquipoEstadio.setText(stringValue(team.get("stadium")));
+        txtEquipoAforo.setText(numberToString(team.get("capacity")));
+        txtEquipoFundacion.setText(numberToString(team.get("foundationYear")));
+        selectComboItemById(cmbEquipoDepartamento, asLong(team.get("departmentId")));
+    }
+
+    private void clearEquipoForm() {
+        selectedTeamId = null;
+        txtEquipoNombre.clear();
+        txtEquipoEstadio.clear();
+        txtEquipoAforo.clear();
+        txtEquipoFundacion.clear();
+        cmbEquipoDepartamento.getSelectionModel().clearSelection();
+        if (tblEquipos != null) {
+            tblEquipos.getSelectionModel().clearSelection();
+        }
+    }
+
+    private void populateJugadorForm(Map<String, Object> player) {
+        if (player == null) {
+            clearJugadorForm();
+            return;
+        }
+        selectedPlayerId = asLong(player.get("id"));
+        txtJugadorNombre1.setText(stringValue(player.get("firstName")));
+        txtJugadorNombre2.setText(stringValue(player.get("secondName")));
+        txtJugadorApellido1.setText(stringValue(player.get("lastName1")));
+        txtJugadorApellido2.setText(stringValue(player.get("lastName2")));
+        txtJugadorCorreo.setText(stringValue(player.get("email")));
+        dateJugadorNacimiento.setValue(parseDate(stringValue(player.get("birthDate"))));
+        cmbJugadorPosicion.getSelectionModel().select(stringValue(player.get("position")));
+
+        Long departmentId = asLong(player.get("departmentId"));
+        Long municipalityId = asLong(player.get("municipalityId"));
+        selectComboItemById(cmbJugadorDepartamento, departmentId);
+        updateMunicipalitiesForDepartment(departmentId, municipiosJugador, cmbJugadorMunicipio, municipalityId);
+        selectComboItemById(cmbJugadorEquipo, asLong(player.get("teamId")));
+        selectComboItemById(cmbJugadorSeleccionCorreo, selectedPlayerId);
+    }
+
+    private void clearJugadorForm() {
+        selectedPlayerId = null;
+        txtJugadorNombre1.clear();
+        txtJugadorNombre2.clear();
+        txtJugadorApellido1.clear();
+        txtJugadorApellido2.clear();
+        txtJugadorCorreo.clear();
+        dateJugadorNacimiento.setValue(null);
+        cmbJugadorPosicion.getSelectionModel().clearSelection();
+        cmbJugadorDepartamento.getSelectionModel().clearSelection();
+        municipiosJugador.clear();
+        cmbJugadorMunicipio.getSelectionModel().clearSelection();
+        cmbJugadorEquipo.getSelectionModel().clearSelection();
+        if (tblJugadores != null) {
+            tblJugadores.getSelectionModel().clearSelection();
+        }
+    }
+
+    private void populateJugadorCorreoForm(Map<String, Object> correo) {
+        if (correo == null) {
+            clearCorreoJugadorForm();
+            return;
+        }
+        selectedPlayerEmailId = asLong(correo.get("id"));
+        txtCorreoJugadorNuevo.setText(stringValue(correo.get("email")));
+    }
+
+    private void clearCorreoJugadorForm() {
+        selectedPlayerEmailId = null;
+        txtCorreoJugadorNuevo.clear();
+        if (tblCorreosJugador != null) {
+            tblCorreosJugador.getSelectionModel().clearSelection();
+        }
+    }
+
+    private void populatePartidoForm(Map<String, Object> match) {
+        if (match == null) {
+            clearPartidoForm();
+            return;
+        }
+        selectedMatchId = asLong(match.get("id"));
+        datePartidoFecha.setValue(parseDate(stringValue(match.get("date"))));
+        txtPartidoGolesCasa.setText(numberToString(match.get("homeGoals")));
+        txtPartidoGolesFuera.setText(numberToString(match.get("awayGoals")));
+        selectComboItemById(cmbPartidoEquipoCasa, asLong(match.get("homeTeamId")));
+        selectComboItemById(cmbPartidoEquipoFuera, asLong(match.get("awayTeamId")));
+    }
+
+    private void clearPartidoForm() {
+        selectedMatchId = null;
+        datePartidoFecha.setValue(null);
+        txtPartidoGolesCasa.clear();
+        txtPartidoGolesFuera.clear();
+        cmbPartidoEquipoCasa.getSelectionModel().clearSelection();
+        cmbPartidoEquipoFuera.getSelectionModel().clearSelection();
+        if (tblPartidos != null) {
+            tblPartidos.getSelectionModel().clearSelection();
+        }
+    }
+
+    private void populateGolForm(Map<String, Object> goal) {
+        if (goal == null) {
+            clearGolForm();
+            return;
+        }
+        selectedGoalId = asLong(goal.get("id"));
+        Map<String, Object> matchMap = castMap(goal.get("match"));
+        selectedGoalMatchId = matchMap != null ? asLong(matchMap.get("id")) : null;
+        selectComboItemById(cmbGolPartido, selectedGoalMatchId);
+        selectComboItemById(cmbGolJugador, asLong(goal.get("playerId")));
+        txtGolMinuto.setText(numberToString(goal.get("minute")));
+        txtGolDescripcion.setText(stringValue(goal.get("description")));
+    }
+
+    private void clearGolForm() {
+        selectedGoalId = null;
+        selectedGoalMatchId = null;
+        cmbGolPartido.getSelectionModel().clearSelection();
+        cmbGolJugador.getSelectionModel().clearSelection();
+        txtGolMinuto.clear();
+        txtGolDescripcion.clear();
+        if (tblGoles != null) {
+            tblGoles.getSelectionModel().clearSelection();
+        }
+    }
+
+    private void populatePresidenteForm(Map<String, Object> president) {
+        if (president == null) {
+            clearPresidenteForm();
+            return;
+        }
+        selectedPresidentDpi = stringValue(president.get("dpi"));
+        txtPresidenteDpi.setText(selectedPresidentDpi);
+        txtPresidenteDpi.setDisable(true);
+        txtPresidenteNombre1.setText(stringValue(president.get("firstName")));
+        txtPresidenteNombre2.setText(stringValue(president.get("secondName")));
+        txtPresidenteNombre3.setText(stringValue(president.get("thirdName")));
+        txtPresidenteApellido1.setText(stringValue(president.get("lastName1")));
+        txtPresidenteApellido2.setText(stringValue(president.get("lastName2")));
+        txtPresidenteCorreo.setText(stringValue(president.get("email")));
+        txtPresidenteAnio.setText(numberToString(president.get("electionYear")));
+        datePresidenteNacimiento.setValue(parseDate(stringValue(president.get("birthDate"))));
+
+        Long departmentId = asLong(president.get("departmentId"));
+        Long municipalityId = asLong(president.get("municipalityId"));
+        selectComboItemById(cmbPresidenteDepartamento, departmentId);
+        updateMunicipalitiesForDepartment(departmentId, municipiosPresidente, cmbPresidenteMunicipio, municipalityId);
+
+        Map<String, Object> team = castMap(president.get("team"));
+        selectComboItemById(cmbPresidenteEquipo, team != null ? asLong(team.get("id")) : null);
+        if (selectedPresidentDpi != null) {
+            cmbPresidenteSeleccionCorreo.getItems().stream()
+                    .filter(item -> Objects.equals(stringValue(item.get("dpi")), selectedPresidentDpi))
+                    .findFirst()
+                    .ifPresent(item -> cmbPresidenteSeleccionCorreo.getSelectionModel().select(item));
+        }
+    }
+
+    private void clearPresidenteForm() {
+        selectedPresidentDpi = null;
+        txtPresidenteDpi.setDisable(false);
+        txtPresidenteDpi.clear();
+        txtPresidenteNombre1.clear();
+        txtPresidenteNombre2.clear();
+        txtPresidenteNombre3.clear();
+        txtPresidenteApellido1.clear();
+        txtPresidenteApellido2.clear();
+        txtPresidenteCorreo.clear();
+        txtPresidenteAnio.clear();
+        datePresidenteNacimiento.setValue(null);
+        cmbPresidenteDepartamento.getSelectionModel().clearSelection();
+        municipiosPresidente.clear();
+        cmbPresidenteMunicipio.getSelectionModel().clearSelection();
+        cmbPresidenteEquipo.getSelectionModel().clearSelection();
+        if (tblPresidentes != null) {
+            tblPresidentes.getSelectionModel().clearSelection();
+        }
+    }
+
+    private void populatePresidenteCorreoForm(Map<String, Object> correo) {
+        if (correo == null) {
+            clearCorreoPresidenteForm();
+            return;
+        }
+        selectedPresidentEmailId = asLong(correo.get("id"));
+        txtCorreoPresidenteNuevo.setText(stringValue(correo.get("email")));
+    }
+
+    private void clearCorreoPresidenteForm() {
+        selectedPresidentEmailId = null;
+        txtCorreoPresidenteNuevo.clear();
+        if (tblCorreosPresidente != null) {
+            tblCorreosPresidente.getSelectionModel().clearSelection();
+        }
+    }
+
+    private void selectComboItemById(ComboBox<Map<String, Object>> combo, Long id) {
+        if (combo == null) {
+            return;
+        }
+        if (id == null) {
+            combo.getSelectionModel().clearSelection();
+            return;
+        }
+        combo.getItems().stream()
+                .filter(item -> Objects.equals(asLong(item.get("id")), id))
+                .findFirst()
+                .ifPresent(combo.getSelectionModel()::select);
+    }
+
+    private LocalDate parseDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
     @FXML
     public void onCrearEquipo() {
         if (isBlank(txtEquipoNombre) || isBlank(txtEquipoEstadio) || isBlank(txtEquipoAforo) ||
-                isBlank(txtEquipoFundacion) || isBlank(txtEquipoDepartamento)) {
+                isBlank(txtEquipoFundacion) || cmbEquipoDepartamento.getSelectionModel().getSelectedItem() == null) {
             showError("Completa todos los campos del equipo.");
             return;
         }
@@ -484,16 +841,13 @@ public class EquipoController {
             payload.put("stadium", txtEquipoEstadio.getText().trim());
             payload.put("capacity", capacity);
             payload.put("foundationYear", foundationYear);
-            payload.put("department", txtEquipoDepartamento.getText().trim());
+            Map<String, Object> department = cmbEquipoDepartamento.getSelectionModel().getSelectedItem();
+            payload.put("departmentId", asLong(department.get("id")));
 
             api.createTeam(payload);
             onRefresh();
             showInfo("Equipo creado correctamente.");
-            txtEquipoNombre.clear();
-            txtEquipoEstadio.clear();
-            txtEquipoAforo.clear();
-            txtEquipoFundacion.clear();
-            txtEquipoDepartamento.clear();
+            clearEquipoForm();
         } catch (NumberFormatException nfe) {
             showError("Aforo y año de fundación deben ser números.");
         } catch (Exception e) {
@@ -502,17 +856,69 @@ public class EquipoController {
     }
 
     @FXML
+    public void onActualizarEquipo() {
+        if (selectedTeamId == null) {
+            showError("Selecciona un equipo para actualizar.");
+            return;
+        }
+        if (isBlank(txtEquipoNombre) || isBlank(txtEquipoEstadio) || isBlank(txtEquipoAforo) ||
+                isBlank(txtEquipoFundacion) || cmbEquipoDepartamento.getSelectionModel().getSelectedItem() == null) {
+            showError("Completa todos los campos del equipo.");
+            return;
+        }
+        try {
+            int capacity = Integer.parseInt(txtEquipoAforo.getText().trim());
+            int foundationYear = Integer.parseInt(txtEquipoFundacion.getText().trim());
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("name", txtEquipoNombre.getText().trim());
+            payload.put("stadium", txtEquipoEstadio.getText().trim());
+            payload.put("capacity", capacity);
+            payload.put("foundationYear", foundationYear);
+            Map<String, Object> department = cmbEquipoDepartamento.getSelectionModel().getSelectedItem();
+            payload.put("departmentId", asLong(department.get("id")));
+
+            api.updateTeam(selectedTeamId, payload);
+            onRefresh();
+            showInfo("Equipo actualizado correctamente.");
+        } catch (NumberFormatException nfe) {
+            showError("Aforo y año de fundación deben ser números.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onEliminarEquipo() {
+        if (selectedTeamId == null) {
+            showError("Selecciona un equipo para eliminar.");
+            return;
+        }
+        try {
+            api.deleteTeam(selectedTeamId);
+            onRefresh();
+            showInfo("Equipo eliminado.");
+            clearEquipoForm();
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
     public void onCrearJugador() {
         if (isBlank(txtJugadorNombre1) || isBlank(txtJugadorApellido1) || isBlank(txtJugadorApellido2) ||
-                isBlank(txtJugadorCorreo) || isBlank(txtJugadorMunicipio) ||
+                isBlank(txtJugadorCorreo) ||
                 dateJugadorNacimiento.getValue() == null ||
                 cmbJugadorPosicion.getSelectionModel().getSelectedItem() == null ||
-                cmbJugadorEquipo.getSelectionModel().getSelectedItem() == null) {
+                cmbJugadorEquipo.getSelectionModel().getSelectedItem() == null ||
+                cmbJugadorDepartamento.getSelectionModel().getSelectedItem() == null ||
+                cmbJugadorMunicipio.getSelectionModel().getSelectedItem() == null) {
             showError("Completa todos los campos obligatorios del jugador.");
             return;
         }
 
         Map<String, Object> team = cmbJugadorEquipo.getSelectionModel().getSelectedItem();
+        Map<String, Object> municipality = cmbJugadorMunicipio.getSelectionModel().getSelectedItem();
         try {
             Map<String, Object> payload = new HashMap<>();
             payload.put("firstName", txtJugadorNombre1.getText().trim());
@@ -520,10 +926,10 @@ public class EquipoController {
             payload.put("lastName1", txtJugadorApellido1.getText().trim());
             payload.put("lastName2", txtJugadorApellido2.getText().trim());
             payload.put("email", txtJugadorCorreo.getText().trim());
-            payload.put("municipality", txtJugadorMunicipio.getText().trim());
             payload.put("birthDate", dateJugadorNacimiento.getValue().format(dateFormatter));
             payload.put("position", cmbJugadorPosicion.getSelectionModel().getSelectedItem());
             payload.put("teamId", asLong(team.get("id")));
+            payload.put("municipalityId", asLong(municipality.get("id")));
 
             api.createPlayer(payload);
             onRefresh();
@@ -534,16 +940,62 @@ public class EquipoController {
         }
     }
 
-    private void clearJugadorForm() {
-        txtJugadorNombre1.clear();
-        txtJugadorNombre2.clear();
-        txtJugadorApellido1.clear();
-        txtJugadorApellido2.clear();
-        txtJugadorCorreo.clear();
-        txtJugadorMunicipio.clear();
-        dateJugadorNacimiento.setValue(null);
-        cmbJugadorPosicion.getSelectionModel().clearSelection();
-        cmbJugadorEquipo.getSelectionModel().clearSelection();
+    @FXML
+    public void onActualizarJugador() {
+        if (selectedPlayerId == null) {
+            showError("Selecciona un jugador para actualizar.");
+            return;
+        }
+        if (isBlank(txtJugadorNombre1) || isBlank(txtJugadorApellido1) || isBlank(txtJugadorApellido2) ||
+                isBlank(txtJugadorCorreo) ||
+                dateJugadorNacimiento.getValue() == null ||
+                cmbJugadorPosicion.getSelectionModel().getSelectedItem() == null ||
+                cmbJugadorEquipo.getSelectionModel().getSelectedItem() == null ||
+                cmbJugadorDepartamento.getSelectionModel().getSelectedItem() == null ||
+                cmbJugadorMunicipio.getSelectionModel().getSelectedItem() == null) {
+            showError("Completa todos los campos obligatorios del jugador.");
+            return;
+        }
+
+        Map<String, Object> team = cmbJugadorEquipo.getSelectionModel().getSelectedItem();
+        Map<String, Object> municipality = cmbJugadorMunicipio.getSelectionModel().getSelectedItem();
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("firstName", txtJugadorNombre1.getText().trim());
+            payload.put("secondName", txtJugadorNombre2.getText().trim());
+            payload.put("lastName1", txtJugadorApellido1.getText().trim());
+            payload.put("lastName2", txtJugadorApellido2.getText().trim());
+            payload.put("email", txtJugadorCorreo.getText().trim());
+            payload.put("birthDate", dateJugadorNacimiento.getValue().format(dateFormatter));
+            payload.put("position", cmbJugadorPosicion.getSelectionModel().getSelectedItem());
+            payload.put("teamId", asLong(team.get("id")));
+            payload.put("municipalityId", asLong(municipality.get("id")));
+
+            api.updatePlayer(selectedPlayerId, payload);
+            onRefresh();
+            showInfo("Jugador actualizado correctamente.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onEliminarJugador() {
+        if (selectedPlayerId == null) {
+            showError("Selecciona un jugador para eliminar.");
+            return;
+        }
+        try {
+            api.deletePlayer(selectedPlayerId);
+            onRefresh();
+            showInfo("Jugador eliminado.");
+            selectedPlayerId = null;
+            clearJugadorForm();
+            cmbJugadorSeleccionCorreo.getSelectionModel().clearSelection();
+            correosJugador.clear();
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
     }
 
     @FXML
@@ -564,6 +1016,47 @@ public class EquipoController {
             txtCorreoJugadorNuevo.clear();
             loadPlayerEmailsFromSelection();
             showInfo("Correo agregado al jugador.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onActualizarCorreoJugador() {
+        Map<String, Object> player = cmbJugadorSeleccionCorreo.getSelectionModel().getSelectedItem();
+        if (player == null || selectedPlayerEmailId == null) {
+            showError("Selecciona un jugador y un correo para actualizar.");
+            return;
+        }
+        if (isBlank(txtCorreoJugadorNuevo)) {
+            showError("Ingresa el correo a actualizar.");
+            return;
+        }
+        try {
+            Long playerId = asLong(player.get("id"));
+            Map<String, Object> payload = Map.of("email", txtCorreoJugadorNuevo.getText().trim());
+            api.updatePlayerEmail(playerId, selectedPlayerEmailId, payload);
+            loadPlayerEmailsFromSelection();
+            showInfo("Correo actualizado.");
+            clearCorreoJugadorForm();
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onEliminarCorreoJugador() {
+        Map<String, Object> player = cmbJugadorSeleccionCorreo.getSelectionModel().getSelectedItem();
+        if (player == null || selectedPlayerEmailId == null) {
+            showError("Selecciona un jugador y un correo para eliminar.");
+            return;
+        }
+        try {
+            Long playerId = asLong(player.get("id"));
+            api.deletePlayerEmail(playerId, selectedPlayerEmailId);
+            loadPlayerEmailsFromSelection();
+            showInfo("Correo eliminado.");
+            clearCorreoJugadorForm();
         } catch (Exception e) {
             showError(e.getMessage());
         }
@@ -601,13 +1094,68 @@ public class EquipoController {
             api.createMatch(payload);
             onRefresh();
             showInfo("Partido registrado.");
-            txtPartidoGolesCasa.clear();
-            txtPartidoGolesFuera.clear();
-            datePartidoFecha.setValue(null);
-            cmbPartidoEquipoCasa.getSelectionModel().clearSelection();
-            cmbPartidoEquipoFuera.getSelectionModel().clearSelection();
+            clearPartidoForm();
         } catch (NumberFormatException nfe) {
             showError("Los goles deben ser valores numéricos.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onActualizarPartido() {
+        if (selectedMatchId == null) {
+            showError("Selecciona un partido para actualizar.");
+            return;
+        }
+        if (datePartidoFecha.getValue() == null ||
+                cmbPartidoEquipoCasa.getSelectionModel().getSelectedItem() == null ||
+                cmbPartidoEquipoFuera.getSelectionModel().getSelectedItem() == null ||
+                isBlank(txtPartidoGolesCasa) ||
+                isBlank(txtPartidoGolesFuera)) {
+            showError("Completa todos los campos del partido.");
+            return;
+        }
+
+        Map<String, Object> homeTeam = cmbPartidoEquipoCasa.getSelectionModel().getSelectedItem();
+        Map<String, Object> awayTeam = cmbPartidoEquipoFuera.getSelectionModel().getSelectedItem();
+        if (Objects.equals(asLong(homeTeam.get("id")), asLong(awayTeam.get("id")))) {
+            showError("Los equipos casa y fuera deben ser distintos.");
+            return;
+        }
+
+        try {
+            int goalsHome = Integer.parseInt(txtPartidoGolesCasa.getText().trim());
+            int goalsAway = Integer.parseInt(txtPartidoGolesFuera.getText().trim());
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("date", datePartidoFecha.getValue().format(dateFormatter));
+            payload.put("homeTeamId", asLong(homeTeam.get("id")));
+            payload.put("awayTeamId", asLong(awayTeam.get("id")));
+            payload.put("homeGoals", goalsHome);
+            payload.put("awayGoals", goalsAway);
+
+            api.updateMatch(selectedMatchId, payload);
+            onRefresh();
+            showInfo("Partido actualizado correctamente.");
+        } catch (NumberFormatException nfe) {
+            showError("Los goles deben ser valores numéricos.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onEliminarPartido() {
+        if (selectedMatchId == null) {
+            showError("Selecciona un partido para eliminar.");
+            return;
+        }
+        try {
+            api.deleteMatch(selectedMatchId);
+            onRefresh();
+            showInfo("Partido eliminado.");
+            clearPartidoForm();
         } catch (Exception e) {
             showError(e.getMessage());
         }
@@ -633,12 +1181,65 @@ public class EquipoController {
             api.createGoal(matchId, payload);
             showInfo("Gol registrado.");
             loadGoals();
-            txtGolMinuto.clear();
-            txtGolDescripcion.clear();
-            cmbGolPartido.getSelectionModel().clearSelection();
-            cmbGolJugador.getSelectionModel().clearSelection();
+            clearGolForm();
         } catch (NumberFormatException nfe) {
             showError("El minuto debe ser numérico.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onActualizarGol() {
+        if (selectedGoalId == null) {
+            showError("Selecciona un gol para actualizar.");
+            return;
+        }
+        Map<String, Object> match = cmbGolPartido.getSelectionModel().getSelectedItem();
+        Map<String, Object> player = cmbGolJugador.getSelectionModel().getSelectedItem();
+        if (match == null || player == null || isBlank(txtGolMinuto)) {
+            showError("Selecciona partido, jugador y minuto del gol.");
+            return;
+        }
+        try {
+            int minute = Integer.parseInt(txtGolMinuto.getText().trim());
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("playerId", asLong(player.get("id")));
+            payload.put("minute", minute);
+            payload.put("description", txtGolDescripcion.getText().trim());
+
+            Long matchId = asLong(match.get("id"));
+            api.updateGoal(matchId, selectedGoalId, payload);
+            loadGoals();
+            showInfo("Gol actualizado.");
+            clearGolForm();
+        } catch (NumberFormatException nfe) {
+            showError("El minuto debe ser numérico.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onEliminarGol() {
+        if (selectedGoalId == null) {
+            showError("Selecciona un gol para eliminar.");
+            return;
+        }
+        Long matchId = selectedGoalMatchId;
+        if (matchId == null) {
+            Map<String, Object> match = cmbGolPartido.getSelectionModel().getSelectedItem();
+            matchId = match != null ? asLong(match.get("id")) : null;
+        }
+        if (matchId == null) {
+            showError("No se pudo determinar el partido del gol seleccionado.");
+            return;
+        }
+        try {
+            api.deleteGoal(matchId, selectedGoalId);
+            loadGoals();
+            showInfo("Gol eliminado.");
+            clearGolForm();
         } catch (Exception e) {
             showError(e.getMessage());
         }
@@ -648,9 +1249,11 @@ public class EquipoController {
     public void onCrearPresidente() {
         if (isBlank(txtPresidenteDpi) || isBlank(txtPresidenteNombre1) ||
                 isBlank(txtPresidenteApellido1) || isBlank(txtPresidenteApellido2) ||
-                isBlank(txtPresidenteCorreo) || isBlank(txtPresidenteMunicipio) ||
+                isBlank(txtPresidenteCorreo) ||
                 datePresidenteNacimiento.getValue() == null || isBlank(txtPresidenteAnio) ||
-                cmbPresidenteEquipo.getSelectionModel().getSelectedItem() == null) {
+                cmbPresidenteEquipo.getSelectionModel().getSelectedItem() == null ||
+                cmbPresidenteDepartamento.getSelectionModel().getSelectedItem() == null ||
+                cmbPresidenteMunicipio.getSelectionModel().getSelectedItem() == null) {
             showError("Completa todos los campos obligatorios del presidente.");
             return;
         }
@@ -658,6 +1261,7 @@ public class EquipoController {
         try {
             int electionYear = Integer.parseInt(txtPresidenteAnio.getText().trim());
             Map<String, Object> team = cmbPresidenteEquipo.getSelectionModel().getSelectedItem();
+            Map<String, Object> municipality = cmbPresidenteMunicipio.getSelectionModel().getSelectedItem();
 
             Map<String, Object> payload = new HashMap<>();
             payload.put("dpi", txtPresidenteDpi.getText().trim());
@@ -667,16 +1271,83 @@ public class EquipoController {
             payload.put("lastName1", txtPresidenteApellido1.getText().trim());
             payload.put("lastName2", txtPresidenteApellido2.getText().trim());
             payload.put("email", txtPresidenteCorreo.getText().trim());
-            payload.put("municipality", txtPresidenteMunicipio.getText().trim());
             payload.put("birthDate", datePresidenteNacimiento.getValue().format(dateFormatter));
             payload.put("electionYear", electionYear);
             payload.put("team", Map.of("id", asLong(team.get("id"))));
+            payload.put("municipalityId", asLong(municipality.get("id")));
 
             api.createPresident(payload);
             onRefresh();
             showInfo("Presidente creado correctamente.");
+            clearPresidenteForm();
         } catch (NumberFormatException nfe) {
             showError("El año elegido debe ser numérico.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onActualizarPresidente() {
+        if (selectedPresidentDpi == null) {
+            showError("Selecciona un presidente para actualizar.");
+            return;
+        }
+        String dpiIngresado = txtPresidenteDpi.getText().trim();
+        if (!Objects.equals(selectedPresidentDpi, dpiIngresado)) {
+            showError("El DPI no se puede modificar.");
+            return;
+        }
+        if (isBlank(txtPresidenteNombre1) ||
+                isBlank(txtPresidenteApellido1) || isBlank(txtPresidenteApellido2) ||
+                isBlank(txtPresidenteCorreo) ||
+                datePresidenteNacimiento.getValue() == null || isBlank(txtPresidenteAnio) ||
+                cmbPresidenteEquipo.getSelectionModel().getSelectedItem() == null ||
+                cmbPresidenteDepartamento.getSelectionModel().getSelectedItem() == null ||
+                cmbPresidenteMunicipio.getSelectionModel().getSelectedItem() == null) {
+            showError("Completa todos los campos obligatorios del presidente.");
+            return;
+        }
+        try {
+            int electionYear = Integer.parseInt(txtPresidenteAnio.getText().trim());
+            Map<String, Object> team = cmbPresidenteEquipo.getSelectionModel().getSelectedItem();
+            Map<String, Object> municipality = cmbPresidenteMunicipio.getSelectionModel().getSelectedItem();
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("firstName", txtPresidenteNombre1.getText().trim());
+            payload.put("secondName", txtPresidenteNombre2.getText().trim());
+            payload.put("thirdName", txtPresidenteNombre3.getText().trim());
+            payload.put("lastName1", txtPresidenteApellido1.getText().trim());
+            payload.put("lastName2", txtPresidenteApellido2.getText().trim());
+            payload.put("email", txtPresidenteCorreo.getText().trim());
+            payload.put("birthDate", datePresidenteNacimiento.getValue().format(dateFormatter));
+            payload.put("electionYear", electionYear);
+            payload.put("team", Map.of("id", asLong(team.get("id"))));
+            payload.put("municipalityId", asLong(municipality.get("id")));
+
+            api.updatePresident(selectedPresidentDpi, payload);
+            onRefresh();
+            showInfo("Presidente actualizado correctamente.");
+        } catch (NumberFormatException nfe) {
+            showError("El año elegido debe ser numérico.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onEliminarPresidente() {
+        if (selectedPresidentDpi == null) {
+            showError("Selecciona un presidente para eliminar.");
+            return;
+        }
+        try {
+            api.deletePresident(selectedPresidentDpi);
+            onRefresh();
+            showInfo("Presidente eliminado.");
+            clearPresidenteForm();
+            cmbPresidenteSeleccionCorreo.getSelectionModel().clearSelection();
+            correosPresidente.clear();
         } catch (Exception e) {
             showError(e.getMessage());
         }
@@ -700,6 +1371,47 @@ public class EquipoController {
             txtCorreoPresidenteNuevo.clear();
             loadPresidentEmailsFromSelection();
             showInfo("Correo agregado al presidente.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onActualizarCorreoPresidente() {
+        Map<String, Object> president = cmbPresidenteSeleccionCorreo.getSelectionModel().getSelectedItem();
+        if (president == null || selectedPresidentEmailId == null) {
+            showError("Selecciona un presidente y un correo para actualizar.");
+            return;
+        }
+        if (isBlank(txtCorreoPresidenteNuevo)) {
+            showError("Ingresa el correo para actualizar.");
+            return;
+        }
+        try {
+            String dpi = stringValue(president.get("dpi"));
+            Map<String, Object> payload = Map.of("email", txtCorreoPresidenteNuevo.getText().trim());
+            api.updatePresidentEmail(dpi, selectedPresidentEmailId, payload);
+            loadPresidentEmailsFromSelection();
+            showInfo("Correo de presidente actualizado.");
+            clearCorreoPresidenteForm();
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onEliminarCorreoPresidente() {
+        Map<String, Object> president = cmbPresidenteSeleccionCorreo.getSelectionModel().getSelectedItem();
+        if (president == null || selectedPresidentEmailId == null) {
+            showError("Selecciona un presidente y un correo para eliminar.");
+            return;
+        }
+        try {
+            String dpi = stringValue(president.get("dpi"));
+            api.deletePresidentEmail(dpi, selectedPresidentEmailId);
+            loadPresidentEmailsFromSelection();
+            showInfo("Correo de presidente eliminado.");
+            clearCorreoPresidenteForm();
         } catch (Exception e) {
             showError(e.getMessage());
         }
@@ -777,5 +1489,30 @@ public class EquipoController {
         Alert alert = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
         alert.setHeaderText("Operación exitosa");
         alert.showAndWait();
+    }
+
+    private void updateMunicipalitiesForDepartment(Long departmentId,
+                                                   ObservableList<Map<String, Object>> targetList,
+                                                   ComboBox<Map<String, Object>> municipalityCombo,
+                                                   Long selectedMunicipalityId) {
+        List<Map<String, Object>> source = municipiosPorDepartamento.getOrDefault(departmentId, List.of());
+        List<Map<String, Object>> copies = new ArrayList<>(source.size());
+        for (Map<String, Object> item : source) {
+            copies.add(copyMap(item));
+        }
+        targetList.setAll(copies);
+        if (selectedMunicipalityId != null) {
+            selectComboItemById(municipalityCombo, selectedMunicipalityId);
+        } else {
+            municipalityCombo.getSelectionModel().clearSelection();
+        }
+    }
+
+    private Map<String, Object> copyMap(Object value) {
+        Map<String, Object> copy = new HashMap<>();
+        if (value instanceof Map<?, ?> map) {
+            map.forEach((k, v) -> copy.put(String.valueOf(k), v));
+        }
+        return copy;
     }
 }

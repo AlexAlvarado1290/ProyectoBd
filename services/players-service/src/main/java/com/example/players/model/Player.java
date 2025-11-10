@@ -9,20 +9,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "JUGADOR")
 public class Player {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "codigo_jugador")
     private Long id;
 
+    @Column(name = "nombre1")
     private String firstName;
+    @Column(name = "nombre2")
     private String secondName;
+    @Column(name = "apellido1")
     private String lastName1;
+    @Column(name = "apellido2")
     private String lastName2;
+    @Column(name = "correo_electronico")
     private String email;
-    private String municipality;
+    @Column(name = "fecha_nacimiento")
     private LocalDate birthDate;
+    @Column(name = "posicion")
     private String position;
+    @Column(name = "codigo_equipo")
     private Long teamId;
+
+    @ManyToOne
+    @JoinColumn(name = "codigo_municipio")
+    @JsonIgnoreProperties({"players"})
+    private Municipality municipality;
 
     @JsonIgnore
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -47,9 +61,6 @@ public class Player {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getMunicipality() { return municipality; }
-    public void setMunicipality(String municipality) { this.municipality = municipality; }
-
     public LocalDate getBirthDate() { return birthDate; }
     public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
 
@@ -58,6 +69,14 @@ public class Player {
 
     public Long getTeamId() { return teamId; }
     public void setTeamId(Long teamId) { this.teamId = teamId; }
+
+    public Municipality getMunicipality() {
+        return municipality;
+    }
+
+    public void setMunicipality(Municipality municipality) {
+        this.municipality = municipality;
+    }
 
     public List<PlayerEmail> getEmails() { return emails; }
     public void setEmails(List<PlayerEmail> emails) { this.emails = emails; }

@@ -71,10 +71,13 @@
                                             <TextField fx:id="txtEquipoFundacion" promptText="Ej. 1905" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
                                             <Label text="Departamento" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                                            <TextField fx:id="txtEquipoDepartamento" promptText="Departamento / Provincia" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                                            <ComboBox fx:id="cmbEquipoDepartamento" promptText="Selecciona departamento" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
-                                            <Button text="Crear equipo" onAction="#onCrearEquipo" styleClass="primary-button"
-                                                    GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                            <HBox alignment="CENTER_RIGHT" spacing="10" GridPane.rowIndex="5" GridPane.columnIndex="1">
+                                                <Button text="Crear equipo" onAction="#onCrearEquipo" styleClass="primary-button" maxWidth="160"/>
+                                                <Button text="Actualizar" onAction="#onActualizarEquipo" styleClass="secondary-button" maxWidth="160"/>
+                                                <Button text="Eliminar" onAction="#onEliminarEquipo" styleClass="danger-button" maxWidth="160"/>
+                                            </HBox>
                                         </GridPane>
                                     </VBox>
                                 </VBox>
@@ -133,14 +136,17 @@
                                             <Label text="Correo principal" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
                                             <TextField fx:id="txtJugadorCorreo" promptText="correo@dominio.com" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
-                                            <Label text="Municipio" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-                                            <TextField fx:id="txtJugadorMunicipio" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                                            <Label text="Departamento" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbJugadorDepartamento" promptText="Selecciona departamento" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
-                                            <Label text="Fecha nacimiento" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-                                            <DatePicker fx:id="dateJugadorNacimiento" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                                            <Label text="Municipio" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbJugadorMunicipio" promptText="Selecciona municipio" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
 
-                                            <Label text="Posición" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-                                            <ComboBox fx:id="cmbJugadorPosicion" promptText="Selecciona posición" GridPane.rowIndex="7" GridPane.columnIndex="1">
+                                            <Label text="Fecha nacimiento" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                                            <DatePicker fx:id="dateJugadorNacimiento" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+
+                                            <Label text="Posición" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbJugadorPosicion" promptText="Selecciona posición" GridPane.rowIndex="8" GridPane.columnIndex="1">
                                                 <items>
                                                     <FXCollections fx:factory="observableArrayList">
                                                         <String fx:value="Portero"/>
@@ -151,11 +157,14 @@
                                                 </items>
                                             </ComboBox>
 
-                                            <Label text="Equipo" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
-                                            <ComboBox fx:id="cmbJugadorEquipo" promptText="Selecciona equipo" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                                            <Label text="Equipo" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbJugadorEquipo" promptText="Selecciona equipo" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
 
-                                            <Button text="Crear jugador" onAction="#onCrearJugador" styleClass="primary-button"
-                                                    GridPane.rowIndex="9" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                            <HBox alignment="CENTER_RIGHT" spacing="10" GridPane.rowIndex="10" GridPane.columnIndex="1">
+                                                <Button text="Crear jugador" onAction="#onCrearJugador" styleClass="primary-button" maxWidth="160"/>
+                                                <Button text="Actualizar" onAction="#onActualizarJugador" styleClass="secondary-button" maxWidth="160"/>
+                                                <Button text="Eliminar" onAction="#onEliminarJugador" styleClass="danger-button" maxWidth="160"/>
+                                            </HBox>
                                         </GridPane>
                                     </VBox>
 
@@ -179,8 +188,11 @@
                                             <TextField fx:id="txtCorreoJugadorNuevo" promptText="correo alterno"
                                                        GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-                                            <Button text="Agregar correo" onAction="#onAgregarCorreoJugador" styleClass="primary-button"
-                                                    GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                            <HBox alignment="CENTER_RIGHT" spacing="10" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                                                <Button text="Agregar correo" onAction="#onAgregarCorreoJugador" styleClass="primary-button" maxWidth="150"/>
+                                                <Button text="Actualizar" onAction="#onActualizarCorreoJugador" styleClass="secondary-button" maxWidth="150"/>
+                                                <Button text="Eliminar" onAction="#onEliminarCorreoJugador" styleClass="danger-button" maxWidth="150"/>
+                                            </HBox>
                                         </GridPane>
 
                                         <TableView fx:id="tblCorreosJugador" prefHeight="180" styleClass="elevated-table">
@@ -244,8 +256,11 @@
                                             <Label text="Goles fuera" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
                                             <TextField fx:id="txtPartidoGolesFuera" promptText="0" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
-                                            <Button text="Crear partido" onAction="#onCrearPartido" styleClass="primary-button"
-                                                    GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                            <HBox alignment="CENTER_RIGHT" spacing="10" GridPane.rowIndex="5" GridPane.columnIndex="1">
+                                                <Button text="Crear partido" onAction="#onCrearPartido" styleClass="primary-button" maxWidth="160"/>
+                                                <Button text="Actualizar" onAction="#onActualizarPartido" styleClass="secondary-button" maxWidth="160"/>
+                                                <Button text="Eliminar" onAction="#onEliminarPartido" styleClass="danger-button" maxWidth="160"/>
+                                            </HBox>
                                         </GridPane>
                                     </VBox>
                                 </VBox>
@@ -298,8 +313,11 @@
                                             <Label text="Descripción" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
                                             <TextField fx:id="txtGolDescripcion" promptText="Detalle de la jugada" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-                                            <Button text="Registrar gol" onAction="#onCrearGol" styleClass="primary-button"
-                                                    GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                            <HBox alignment="CENTER_RIGHT" spacing="10" GridPane.rowIndex="4" GridPane.columnIndex="1">
+                                                <Button text="Registrar gol" onAction="#onCrearGol" styleClass="primary-button" maxWidth="160"/>
+                                                <Button text="Actualizar" onAction="#onActualizarGol" styleClass="secondary-button" maxWidth="160"/>
+                                                <Button text="Eliminar" onAction="#onEliminarGol" styleClass="danger-button" maxWidth="160"/>
+                                            </HBox>
                                         </GridPane>
                                     </VBox>
                                 </VBox>
@@ -364,20 +382,26 @@
                                             <Label text="Correo principal" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
                                             <TextField fx:id="txtPresidenteCorreo" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
 
-                                            <Label text="Municipio" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-                                            <TextField fx:id="txtPresidenteMunicipio" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                                            <Label text="Departamento" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbPresidenteDepartamento" promptText="Selecciona departamento" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
 
-                                            <Label text="Fecha nacimiento" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
-                                            <DatePicker fx:id="datePresidenteNacimiento" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                                            <Label text="Municipio" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbPresidenteMunicipio" promptText="Selecciona municipio" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
 
-                                            <Label text="Año elegido" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
-                                            <TextField fx:id="txtPresidenteAnio" promptText="Ej. 2020" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+                                            <Label text="Fecha nacimiento" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+                                            <DatePicker fx:id="datePresidenteNacimiento" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
 
-                                            <Label text="Equipo" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
-                                            <ComboBox fx:id="cmbPresidenteEquipo" promptText="Selecciona equipo" GridPane.rowIndex="10" GridPane.columnIndex="1"/>
+                                            <Label text="Año elegido" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
+                                            <TextField fx:id="txtPresidenteAnio" promptText="Ej. 2020" GridPane.rowIndex="10" GridPane.columnIndex="1"/>
 
-                                            <Button text="Crear presidente" onAction="#onCrearPresidente" styleClass="primary-button"
-                                                    GridPane.rowIndex="11" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                            <Label text="Equipo" GridPane.rowIndex="11" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="cmbPresidenteEquipo" promptText="Selecciona equipo" GridPane.rowIndex="11" GridPane.columnIndex="1"/>
+
+                                            <HBox alignment="CENTER_RIGHT" spacing="10" GridPane.rowIndex="12" GridPane.columnIndex="1">
+                                                <Button text="Crear presidente" onAction="#onCrearPresidente" styleClass="primary-button" maxWidth="160"/>
+                                                <Button text="Actualizar" onAction="#onActualizarPresidente" styleClass="secondary-button" maxWidth="160"/>
+                                                <Button text="Eliminar" onAction="#onEliminarPresidente" styleClass="danger-button" maxWidth="160"/>
+                                            </HBox>
                                         </GridPane>
                                     </VBox>
 
@@ -401,8 +425,11 @@
                                             <TextField fx:id="txtCorreoPresidenteNuevo" promptText="correo alterno"
                                                        GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-                                            <Button text="Agregar correo" onAction="#onAgregarCorreoPresidente" styleClass="primary-button"
-                                                    GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.halignment="RIGHT" maxWidth="220"/>
+                                            <HBox alignment="CENTER_RIGHT" spacing="10" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                                                <Button text="Agregar correo" onAction="#onAgregarCorreoPresidente" styleClass="primary-button" maxWidth="150"/>
+                                                <Button text="Actualizar" onAction="#onActualizarCorreoPresidente" styleClass="secondary-button" maxWidth="150"/>
+                                                <Button text="Eliminar" onAction="#onEliminarCorreoPresidente" styleClass="danger-button" maxWidth="150"/>
+                                            </HBox>
                                         </GridPane>
 
                                         <TableView fx:id="tblCorreosPresidente" prefHeight="180" styleClass="elevated-table">

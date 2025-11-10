@@ -4,18 +4,23 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "GOL")
 public class Goal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_gol")
     private Long id;
 
+    @Column(name = "codigo_jugador")
     private Long playerId;
+    @Column(name = "minuto")
     private Integer minute;
+    @Column(name = "descripcion")
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "match_id")
+    @JoinColumn(name = "codigo_partido")
     @JsonIgnoreProperties({"goals"})
     private Match match;
 

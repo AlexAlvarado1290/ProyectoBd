@@ -4,16 +4,26 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "EQUIPO")
 public class Team {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "codigo_equipo")
     private Long id;
 
+    @Column(name = "nombre")
     private String name;
+    @Column(name = "estadio")
     private String stadium;
+    @Column(name = "aforo")
     private Integer capacity;
+    @Column(name = "fundacion")
     private Integer foundationYear;
-    private String department;
+
+    @ManyToOne
+    @JoinColumn(name = "codigo_departamento")
+    @JsonIgnoreProperties({"teams", "municipalities"})
+    private Department department;
 
     @OneToOne(mappedBy = "team")
     @JsonIgnoreProperties(value = "team", allowSetters = true)
@@ -34,8 +44,8 @@ public class Team {
     public Integer getFoundationYear() { return foundationYear; }
     public void setFoundationYear(Integer foundationYear) { this.foundationYear = foundationYear; }
 
-    public String getDepartment() { return department; }
-    public void setDepartment(String department) { this.department = department; }
+    public Department getDepartment() { return department; }
+    public void setDepartment(Department department) { this.department = department; }
 
     public President getPresident() { return president; }
     public void setPresident(President president) { this.president = president; }
