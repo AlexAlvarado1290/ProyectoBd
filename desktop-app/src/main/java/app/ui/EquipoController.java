@@ -94,6 +94,18 @@ public class EquipoController {
     @FXML private TableColumn<Map<String, Object>, String> colPresidenteAnio;
     @FXML private TableColumn<Map<String, Object>, String> colPresidenteEquipo;
 
+    @FXML private TableView<Map<String, Object>> tblDepartamentos;
+    @FXML private TableColumn<Map<String, Object>, String> colDepartamentoId;
+    @FXML private TableColumn<Map<String, Object>, String> colDepartamentoNombre;
+    @FXML private TextField txtDepartamentoNombre;
+
+    @FXML private TableView<Map<String, Object>> tblMunicipios;
+    @FXML private TableColumn<Map<String, Object>, String> colMunicipioId;
+    @FXML private TableColumn<Map<String, Object>, String> colMunicipioNombre;
+    @FXML private TableColumn<Map<String, Object>, String> colMunicipioDepartamento;
+    @FXML private TextField txtMunicipioNombre;
+    @FXML private ComboBox<Map<String, Object>> cmbMunicipioDepartamento;
+
     @FXML private TextField txtPresidenteDpi;
     @FXML private TextField txtPresidenteNombre1;
     @FXML private TextField txtPresidenteNombre2;
@@ -126,6 +138,7 @@ public class EquipoController {
     private final ObservableList<Map<String, Object>> correosPresidente = FXCollections.observableArrayList();
 
     private final ObservableList<Map<String, Object>> departamentos = FXCollections.observableArrayList();
+    private final ObservableList<Map<String, Object>> municipiosCatalogo = FXCollections.observableArrayList();
     private final ObservableList<Map<String, Object>> municipiosJugador = FXCollections.observableArrayList();
     private final ObservableList<Map<String, Object>> municipiosPresidente = FXCollections.observableArrayList();
 
@@ -136,6 +149,7 @@ public class EquipoController {
 
     private final Map<Long, List<Map<String, Object>>> municipiosPorDepartamento = new HashMap<>();
 
+    private final Map<Long, Map<String, Object>> departmentById = new HashMap<>();
     private final Map<Long, Map<String, Object>> teamById = new HashMap<>();
     private final Map<Long, Map<String, Object>> playerById = new HashMap<>();
     private final Map<Long, Map<String, Object>> matchById = new HashMap<>();
@@ -149,6 +163,8 @@ public class EquipoController {
     private Long selectedGoalMatchId;
     private String selectedPresidentDpi;
     private Long selectedPresidentEmailId;
+    private Long selectedDepartamentoId;
+    private Long selectedMunicipioId;
 
     @FXML
     public void initialize() {
@@ -186,6 +202,10 @@ public class EquipoController {
                 .addListener((obs, oldValue, newValue) -> populatePresidenteForm(newValue));
         tblCorreosPresidente.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldValue, newValue) -> populatePresidenteCorreoForm(newValue));
+        tblDepartamentos.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populateDepartamentoForm(newValue));
+        tblMunicipios.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populateMunicipioForm(newValue));
 
         onRefresh();
     }
@@ -241,6 +261,15 @@ public class EquipoController {
         bindColumn(colCorreoPresidenteId, "id");
         bindColumn(colCorreoPresidenteCorreo, "email");
         tblCorreosPresidente.setItems(correosPresidente);
+
+        bindColumn(colDepartamentoId, "id");
+        bindColumn(colDepartamentoNombre, "name");
+        tblDepartamentos.setItems(departamentos);
+
+        bindColumn(colMunicipioId, "id");
+        bindColumn(colMunicipioNombre, "name");
+        bindColumn(colMunicipioDepartamento, "departmentName");
+        tblMunicipios.setItems(municipiosCatalogo);
     }
 
     private void bindColumn(TableColumn<Map<String, Object>, String> column, String key) {
@@ -254,6 +283,7 @@ public class EquipoController {
         configureComboBox(cmbJugadorMunicipio, "name");
         configureComboBox(cmbPresidenteDepartamento, "name");
         configureComboBox(cmbPresidenteMunicipio, "name");
+        configureComboBox(cmbMunicipioDepartamento, "name");
         configureComboBox(cmbJugadorEquipo, "name");
         configureComboBox(cmbPartidoEquipoCasa, "name");
         configureComboBox(cmbPartidoEquipoFuera, "name");
@@ -267,6 +297,7 @@ public class EquipoController {
         cmbEquipoDepartamento.setItems(departamentos);
         cmbJugadorDepartamento.setItems(departamentos);
         cmbPresidenteDepartamento.setItems(departamentos);
+        cmbMunicipioDepartamento.setItems(departamentos);
 
         cmbJugadorMunicipio.setItems(municipiosJugador);
         cmbPresidenteMunicipio.setItems(municipiosPresidente);
@@ -330,35 +361,69 @@ public class EquipoController {
     }
 
     private void loadCatalogs() throws Exception {
-        String json = api.getDepartments();
-        List<Map<String, Object>> departmentList = mapper.readValue(json, new TypeReference<>() {});
+        String departmentsJson = api.getDepartments();
+        List<Map<String, Object>> departmentList = mapper.readValue(departmentsJson, new TypeReference<>() {});
 
-        departamentos.setAll(departmentList.stream()
-                .map(this::copyMap)
-                .peek(dept -> dept.remove("municipalities"))
-                .toList());
-
+        departmentById.clear();
         municipiosPorDepartamento.clear();
+
+        List<Map<String, Object>> departmentCopies = new ArrayList<>();
         for (Map<String, Object> department : departmentList) {
             Map<String, Object> deptCopy = copyMap(department);
+            deptCopy.remove("municipalities");
+            String deptName = stringValue(deptCopy.get("name"));
+            deptCopy.put("name", deptName);
             Long deptId = asLong(deptCopy.get("id"));
-            List<Map<String, Object>> municipalities = new ArrayList<>();
-            Object muniObj = department.get("municipalities");
-            if (muniObj instanceof List<?> muniList) {
-                for (Object item : muniList) {
-                    if (item instanceof Map<?, ?> map) {
-                        Map<String, Object> muniCopy = copyMap(map);
-                        muniCopy.put("departmentId", deptId);
-                        muniCopy.remove("department");
-                        municipalities.add(muniCopy);
+            departmentCopies.add(deptCopy);
+            departmentById.put(deptId, deptCopy);
+        }
+        departamentos.setAll(departmentCopies);
+
+        String municipalitiesJson = api.getMunicipalities();
+        List<Map<String, Object>> municipalityList = mapper.readValue(municipalitiesJson, new TypeReference<>() {});
+
+        List<Map<String, Object>> allMunicipalities = new ArrayList<>();
+        for (Map<String, Object> municipality : municipalityList) {
+            Map<String, Object> muniCopy = copyMap(municipality);
+            Map<String, Object> deptMap = castMap(muniCopy.get("department"));
+            Long deptId = null;
+            String deptName = "";
+            if (deptMap != null) {
+                deptId = asLong(deptMap.get("id"));
+                deptName = stringValue(deptMap.get("name"));
+            } else {
+                deptId = asLong(muniCopy.get("departmentId"));
+                if (deptId != null) {
+                    Map<String, Object> dept = departmentById.get(deptId);
+                    if (dept != null) {
+                        deptName = stringValue(dept.get("name"));
                     }
                 }
             }
-            municipiosPorDepartamento.put(deptId, municipalities);
+            muniCopy.put("departmentId", deptId);
+            muniCopy.remove("department");
+
+            if (deptId != null) {
+                municipiosPorDepartamento
+                        .computeIfAbsent(deptId, ignored -> new ArrayList<>())
+                        .add(copyMap(muniCopy));
+            }
+
+            Map<String, Object> tableEntry = copyMap(muniCopy);
+            tableEntry.put("departmentName", deptName);
+            allMunicipalities.add(tableEntry);
         }
+
+        municipiosCatalogo.setAll(allMunicipalities.stream()
+                .sorted(Comparator
+                        .comparing((Map<String, Object> m) -> stringValue(m.get("departmentName")))
+                        .thenComparing(m -> stringValue(m.get("name"))))
+                .toList());
 
         municipiosJugador.clear();
         municipiosPresidente.clear();
+        clearDepartamentoForm();
+        clearMunicipioForm();
         cmbEquipoDepartamento.getSelectionModel().clearSelection();
         cmbJugadorDepartamento.getSelectionModel().clearSelection();
         cmbJugadorMunicipio.getSelectionModel().clearSelection();
@@ -799,6 +864,44 @@ public class EquipoController {
         }
     }
 
+    private void populateDepartamentoForm(Map<String, Object> department) {
+        if (department == null) {
+            clearDepartamentoForm();
+            return;
+        }
+        selectedDepartamentoId = asLong(department.get("id"));
+        txtDepartamentoNombre.setText(stringValue(department.get("name")));
+    }
+
+    private void clearDepartamentoForm() {
+        selectedDepartamentoId = null;
+        txtDepartamentoNombre.clear();
+        if (tblDepartamentos != null) {
+            tblDepartamentos.getSelectionModel().clearSelection();
+        }
+    }
+
+    private void populateMunicipioForm(Map<String, Object> municipality) {
+        if (municipality == null) {
+            clearMunicipioForm();
+            return;
+        }
+        selectedMunicipioId = asLong(municipality.get("id"));
+        txtMunicipioNombre.setText(stringValue(municipality.get("name")));
+        selectComboItemById(cmbMunicipioDepartamento, asLong(municipality.get("departmentId")));
+    }
+
+    private void clearMunicipioForm() {
+        selectedMunicipioId = null;
+        txtMunicipioNombre.clear();
+        if (cmbMunicipioDepartamento != null) {
+            cmbMunicipioDepartamento.getSelectionModel().clearSelection();
+        }
+        if (tblMunicipios != null) {
+            tblMunicipios.getSelectionModel().clearSelection();
+        }
+    }
+
     private void selectComboItemById(ComboBox<Map<String, Object>> combo, Long id) {
         if (combo == null) {
             return;
@@ -899,6 +1002,120 @@ public class EquipoController {
             onRefresh();
             showInfo("Equipo eliminado.");
             clearEquipoForm();
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onCrearDepartamento() {
+        if (isBlank(txtDepartamentoNombre)) {
+            showError("Ingresa el nombre del departamento.");
+            return;
+        }
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("name", txtDepartamentoNombre.getText().trim());
+            api.createDepartment(payload);
+            onRefresh();
+            showInfo("Departamento creado correctamente.");
+            clearDepartamentoForm();
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onActualizarDepartamento() {
+        if (selectedDepartamentoId == null) {
+            showError("Selecciona un departamento para actualizar.");
+            return;
+        }
+        if (isBlank(txtDepartamentoNombre)) {
+            showError("Ingresa el nombre del departamento.");
+            return;
+        }
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("name", txtDepartamentoNombre.getText().trim());
+            api.updateDepartment(selectedDepartamentoId, payload);
+            onRefresh();
+            showInfo("Departamento actualizado correctamente.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onEliminarDepartamento() {
+        if (selectedDepartamentoId == null) {
+            showError("Selecciona un departamento para eliminar.");
+            return;
+        }
+        try {
+            api.deleteDepartment(selectedDepartamentoId);
+            onRefresh();
+            showInfo("Departamento eliminado.");
+            clearDepartamentoForm();
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onCrearMunicipio() {
+        if (isBlank(txtMunicipioNombre) || cmbMunicipioDepartamento.getSelectionModel().getSelectedItem() == null) {
+            showError("Ingresa el nombre y selecciona el departamento del municipio.");
+            return;
+        }
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("name", txtMunicipioNombre.getText().trim());
+            Map<String, Object> department = cmbMunicipioDepartamento.getSelectionModel().getSelectedItem();
+            payload.put("departmentId", asLong(department.get("id")));
+            api.createMunicipality(payload);
+            onRefresh();
+            showInfo("Municipio creado correctamente.");
+            clearMunicipioForm();
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onActualizarMunicipio() {
+        if (selectedMunicipioId == null) {
+            showError("Selecciona un municipio para actualizar.");
+            return;
+        }
+        if (isBlank(txtMunicipioNombre) || cmbMunicipioDepartamento.getSelectionModel().getSelectedItem() == null) {
+            showError("Ingresa el nombre y selecciona el departamento del municipio.");
+            return;
+        }
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("name", txtMunicipioNombre.getText().trim());
+            Map<String, Object> department = cmbMunicipioDepartamento.getSelectionModel().getSelectedItem();
+            payload.put("departmentId", asLong(department.get("id")));
+            api.updateMunicipality(selectedMunicipioId, payload);
+            onRefresh();
+            showInfo("Municipio actualizado correctamente.");
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onEliminarMunicipio() {
+        if (selectedMunicipioId == null) {
+            showError("Selecciona un municipio para eliminar.");
+            return;
+        }
+        try {
+            api.deleteMunicipality(selectedMunicipioId);
+            onRefresh();
+            showInfo("Municipio eliminado.");
+            clearMunicipioForm();
         } catch (Exception e) {
             showError(e.getMessage());
         }

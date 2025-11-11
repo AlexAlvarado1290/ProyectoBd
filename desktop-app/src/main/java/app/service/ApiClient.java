@@ -185,6 +185,18 @@ public class ApiClient {
         return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
     }
 
+    public String createDepartment(Map<String, Object> payload) throws IOException, InterruptedException {
+        return sendJsonRequest("POST", teamsBase + "/catalog/departments", payload);
+    }
+
+    public String updateDepartment(Long departmentId, Map<String, Object> payload) throws IOException, InterruptedException {
+        return sendJsonRequest("PUT", teamsBase + "/catalog/departments/" + departmentId, payload);
+    }
+
+    public String deleteDepartment(Long departmentId) throws IOException, InterruptedException {
+        return sendNoBodyRequest("DELETE", teamsBase + "/catalog/departments/" + departmentId);
+    }
+
     public String getMunicipalities() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder(URI.create(teamsBase + "/catalog/municipalities"))
                 .GET().build();
@@ -196,6 +208,18 @@ public class ApiClient {
                         URI.create(teamsBase + "/catalog/departments/" + departmentId + "/municipalities"))
                 .GET().build();
         return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+    }
+
+    public String createMunicipality(Map<String, Object> payload) throws IOException, InterruptedException {
+        return sendJsonRequest("POST", teamsBase + "/catalog/municipalities", payload);
+    }
+
+    public String updateMunicipality(Long municipalityId, Map<String, Object> payload) throws IOException, InterruptedException {
+        return sendJsonRequest("PUT", teamsBase + "/catalog/municipalities/" + municipalityId, payload);
+    }
+
+    public String deleteMunicipality(Long municipalityId) throws IOException, InterruptedException {
+        return sendNoBodyRequest("DELETE", teamsBase + "/catalog/municipalities/" + municipalityId);
     }
 
     private String sendJsonRequest(String method, String url, Map<String, Object> payload) throws IOException, InterruptedException {
